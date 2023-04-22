@@ -23,8 +23,10 @@ namespace WEB_APP_PROJECT.Controllers
         {
             IEnumerable <FoodCourt>? allFood = _db.FoodCourts;
             IEnumerable<UserState>? allNinja = _db.UserStates;
+            IEnumerable<Order>? allOrder = _db.Orders;
             string userName = User.Identity.GetUserName();
             var obj = _db.UserStates.FirstOrDefault(n => n.UserName == userName);
+            var obj2 = _db.Orders.FirstOrDefault(o => o.riderName == userName);
             if (obj == null)
             {
                 var naruto = new UserState
@@ -35,7 +37,17 @@ namespace WEB_APP_PROJECT.Controllers
                 _db.UserStates.Add(naruto);
                 _db.SaveChanges();
             }
-
+            else if(obj.State == "ผู้ค้า")
+            {
+                if(obj2 == null)
+                {
+                    return View(allFood);
+                }
+                else
+                {
+                    return RedirectToAction("ChoosePage", new { FoodShopName = obj2.FoodShopName });
+                }
+            }
             return View(allFood);
         }
         public IActionResult Ask(string FoodShopName)
@@ -48,7 +60,11 @@ namespace WEB_APP_PROJECT.Controllers
 
         public IActionResult UpdateState(string userName, string newState, string FoodShopName)
         {
+            IEnumerable<FoodCourt>? allFood = _db.FoodCourts;
+            IEnumerable<Order>? allOrder = _db.Orders;
             var obj = _db.UserStates.FirstOrDefault(n => n.UserName == userName);
+            var objFNS = _db.FoodCourts.FirstOrDefault(o => o.FoodShopName == FoodShopName);
+            //var objCheck = _db.Orders.FirstOrDefault(o => o.riderName == userName);
             if (obj == null)
             {
                 return NotFound();
@@ -57,6 +73,8 @@ namespace WEB_APP_PROJECT.Controllers
             _db.SaveChanges();
             if(newState == "ผู้ค้า")
             {
+                objFNS.RiderCount += 1;
+                _db.SaveChanges();
                 return RedirectToAction("ChoosePage", new { FoodShopName = FoodShopName });
             }
             return RedirectToAction("BuiltOrder", new {FoodShopName = FoodShopName});
@@ -94,6 +112,22 @@ namespace WEB_APP_PROJECT.Controllers
             return View(orderList);
         }
 
+        public IActionResult ConfirmOrder(int Orderid)
+        {
+            var order = _db.Orders.Find(Orderid);
+            if (order == null)
+            {
+                return NotFound(); // หา order ไม่เจอ ส่ง response 404 Not Found
+            }
+            else
+            {
+                _db.Orders.Remove(order);
+                _db.SaveChanges();
+                return RedirectToAction("Order");
+
+            }
+
+        }
 
         public IActionResult Privacy()
         {

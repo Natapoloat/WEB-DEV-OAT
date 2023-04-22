@@ -3,13 +3,25 @@
     ViewData["Title"] = "Order";
 }
 
-
+<script>
+    function confirmOrder(orderId) {
+        var card = document.getElementById("card-" + orderId);
+        card.style.display = "none";
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/Order/ConfirmOrder?orderId=" + orderId, true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                console.log("Order " + orderId + " is confirmed.");
+            }
+        };
+        xhr.send();
+    }
+</script>
 
 <div class="w-100 d-flex flex-wrap justify-content-center">
-
     @foreach (var tmp in Model)
     {
-        <div class="card mb-3 mx-3" style="width:16rem;">
+        <div id="card-@tmp.OrderId" class="card mb-3 mx-3" style="width:16rem;">
             <div class="card-body">
                 <h4 class="card-title"> @tmp.FoodShopName</h4>
                 <p class="card-text">
@@ -19,9 +31,9 @@
                     เมนู : @tmp.menu<br>
                     จำนวน : @tmp.amount<br>
                 </p>
-                <a href="#" class="btn btn-success">ยืนยันการรับ</a>
+                <a href="ConfirmOrder?Orderid=@tmp.OrderId" class="btn btn-success" onclick="confirmOrder('@tmp.OrderId')">ยืนยันการรับ</a>
+
             </div>
         </div>
     }
 </div>
-
